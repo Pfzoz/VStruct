@@ -110,8 +110,3 @@ class VStruct:
             vreturn += "\nFLAGS :\nTMP -> " + str(self._tmp) + "\n"
         return vreturn
             
-
-### Notes ###
-
-#It is recommended to look at 'tmp' as a "private" variable. Calling and changing it directly from the object
-#instance might lead to unpredictable results. Instead use the method change_tmp() to change its value
