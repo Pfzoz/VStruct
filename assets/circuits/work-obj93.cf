@@ -1,0 +1,13 @@
+v 4
+file . "demux2x1.vhdl" "7aabd81141bb109dde222d4947ed45282843f2b2" "20220624133812.922":
+  entity demux2x1 at 1( 0) + 0 on 19;
+  architecture bhvr of demux2x1 at 13( 213) + 0 on 20;
+file . "mux2demux.vhdl" "b34e0faf13265c5b70d13430e29410ff06ab337b" "20220624133812.922":
+  entity mux2demux at 1( 0) + 0 on 21;
+  architecture comute of mux2demux at 12( 187) + 0 on 22;
+file . "mux2x1.vhdl" "f939d52db23fe230a0e036cf492f9916b6252eab" "20220624133812.923":
+  entity mux2x1 at 1( 0) + 0 on 23;
+  architecture bhvr of mux2x1 at 13( 179) + 0 on 24;
+file . "tb_mux2demux.vhdl" "be1ba1ea140568bf35fed1b570101bc24d1df220" "20220624133812.923":
+  entity tb_mux2demux at 1( 0) + 0 on 25;
+  architecture test of tb_mux2demux at 7( 80) + 0 on 26;
