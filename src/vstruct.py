@@ -28,6 +28,7 @@ class VStruct:
     def __init__(self, v_path, sim_path=False, tmp=False): ### Initializion of a V Struct object
         self.v_path = v_path
         self.vhdl = []
+        self.included = []
         self.sim_path = sim_path
         self._tmp = tmp
         self.up_structure() 
@@ -55,6 +56,13 @@ class VStruct:
         for path in v_paths:
             if path.split(".")[-1] == "vhdl":
                 self.vhdl.append(path)
+
+    def include(self, *args : str): ### Method to include other types of extensions so that they're added to the structure.
+        v_paths = loop_dir(self.v_path[:-1], "sim", "analysis")
+        for path in v_paths:
+            if (path.split(".")[-1] in args) or (path.split(".")[-1] == args):
+                self.included.append(path)
+
 
     def analyze(self, save=True): ### Method that analyzes the VHDL structure through GHDL. TMP will not prevent the analysis file of being saved.
         if not os.path.exists(self.v_path + "analysis"): os.mkdir(self.v_path + "analysis")
