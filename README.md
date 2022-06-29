@@ -11,7 +11,7 @@ VStruct.run() also runs .analyze() itself, being completly dependent on it.
 VStruct is also completely dependent on commands from the open-source analyzer, compiler and simulator GHDL, which can be found here https://github.com/ghdl/ghdl
 
 
-<img src="./../images/vhdl7.jpg">
+<img src="./images/vhdl7.jpg">
 
 ## How to use?
 <code>python3 ./src/main.py</code>
