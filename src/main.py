@@ -98,6 +98,15 @@ while cmd != "exit":
         else:
             print("! Tried Running when V Struct wasn't mounted.\n")
     elif op == "status": # Check the current structure.
-        print(vStructure.to_string("all", "others"))
+        parameters = arguments[1:]
+        if len(parameters) != 0:
+            passes = []
+            if "-vhdl" in parameters: passes.append(".vhdl")
+            if "-included" in parameters: passes.append("included")
+            if "-others" in parameters: passes.append("others")
+            print("passes")
+            print(vStructure.to_string(*passes))
+        else:
+            print(vStructure.to_string())
 
 exit(0)

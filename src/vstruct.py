@@ -35,7 +35,7 @@ class VStruct:
         # --- Tries to set up simulation path (directory where the simulation will be runned).
         if not sim_path: 
             self.sim_path = v_path+"sim/"
-            print("\n==Simulation path not defined, setting simulation path at structure's path [", self.sim_path, "].")
+            print("\n==Simulation path not defined, setting simulation path at structure's path [", self.sim_path, "].\n")
             
         else:
             if not os.path.exists(sim_path):
@@ -106,7 +106,7 @@ class VStruct:
                         break
 
     def to_string(self, *args): ### Method that returns a string of the state of the current V Struct
-        vreturn = "\n--Estrutura Atual--\n"
+        vreturn = f"\n----------Estrutura Atual => [{self.v_path}]]----------\n"
         if (len(args) == 0) or (args == "all") or ("all" in args):
             vreturn += "\nVHDL :\n"
             for i in self.files:
@@ -119,6 +119,7 @@ class VStruct:
             vreturn += "\n\nSIM :\n-- " + self.sim_path
             vreturn += "\n"
         else:
+            print("else")
             if ".vhdl" in [i.lower() for i in args]:
                 vreturn += "\nVHDL :\n"
                 for i in self.files:
@@ -130,5 +131,6 @@ class VStruct:
                     if not ".vhdl" in i:
                         vreturn += "-- " + i + "\n" 
         if "others" in args:
+            vreturn += "\n\nSIM :\n\n-- " + self.sim_path
             vreturn += "\nFLAGS :\nANALYSIS_READY -> " + str(self.a_ready) + "\n"
         return vreturn
