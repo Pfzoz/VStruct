@@ -1,4 +1,5 @@
 import os
+from xml.sax.handler import feature_external_ges
 from vstruct import VStruct
 
 # Function that returns a directory path if its valid, or returns False if it's invalid or doesn't exist. Valid paths strings have '/' at the end and returns True
@@ -18,7 +19,7 @@ tmp = False
 cmd = None
 vStructure = None
 path = os.getcwd()
-
+modified = True
 # Program
 
 while cmd != "exit":
@@ -75,48 +76,28 @@ while cmd != "exit":
         else:
             print("! Tried Analyzing when V Struct wasn't mounted.\n")
     elif op == "run": # Run the Mounted V Struct.
-        pass
-
-    
-
+        parameters = arguments[1:]
+        if vStructure != None:
+            target_files = []
+            time = None
+            force = False
+            for parameter in parameters:
+                if parameter == "-time":
+                    time = parameters[parameters.index(parameter)+1]
+                    time = int(time)
+                if parameter == "-f":
+                    force = True
+            for parameter in parameters:
+                if parameter[0] != "-":
+                    target_files.append(parameter)
+                else:
+                    break
+            if not time:
+                time = 20
+            vStructure.run(time, *target_files, force=force)
+        else:
+            print("! Tried Running when V Struct wasn't mounted.\n")
+    elif op == "status": # Check the current structure.
+        print(vStructure.to_string("all", "others"))
 
 exit(0)
-print("V Structer: Insira uma opção:\n1 - path\n2 - analyze\n3 - check\n4 - tmp\n5 - run\n6 - exit")
-while option != "exit":
-    option = input("> ")
-    if option == "path":
-        arg = valid_path(input("\nInsira o path da estrutura vhdl:\n>"))
-        if (arg != False) and (os.path.isdir(arg)):
-            vStructure = VStruct(arg, tmp=False)
-            print("\nCurrent path:", arg)
-        else:
-            print("\nCaminho não existente ou não é um diretório válido.")
-    elif option == "analyze":
-        if vStructure != None:
-            vStructure.analyze()
-        else:
-            print("\nNenhuma estrutura foi especificada. Utilize 'path' para especificar um diretório com uma estrutura de arquivos VHDL.")
-    elif option == "check":
-        if vStructure != None:
-            print(vStructure.to_string("all", "others"))
-        else:
-            print("\nNenhuma estrutura foi especificada. Utilize 'path' para especificar um diretório com uma estrutura de arquivos VHDL.")
-    elif option == "tmp":
-        if vStructure != None:
-            tmp = not tmp
-            vStructure.change_tmp(tmp)
-            print("\nTMP Flag changed to:", tmp)
-        else:
-            print("\nNenhuma estrutura foi especificada. Utilize 'path' para especificar um diretório com uma estrutura de arquivos VHDL.")
-    elif option == "run":
-        if vStructure != None:
-            target_file = input("Insira o arquivo que deseja simular: ")
-            time = input("Insira o tempo em ns da simulação: ")
-            vStructure.run(target_file, time)
-        else:
-            print("\nNenhuma estrutura foi especificada. Utilize 'path' para especificar um diretório com uma estrutura de arquivos VHDL.")
-    if not option in ["path", "analyze", "check", "tmp", "run", "exit"]:
-        print("\n-> Opção inválida")
-    else:
-        print("\nV Structer: Insira uma opção:\n1 - path\n2 - analyze\n3 - check\n4 - tmp\n5 - run\n6 - exit")
-        

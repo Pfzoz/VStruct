@@ -1,5 +1,6 @@
 from cmath import e
 from importlib.resources import path
+from multiprocessing.context import ForkContext
 import os
 from re import sub
 import shutil
@@ -25,9 +26,10 @@ def loop_dir(dir, *args):
 
 class VStruct:
 
-    def __init__(self, v_path, sim_path=False): ### Initializion of a V Struct object
+    def __init__(self, v_path : str, sim_path=False): ### Initializion of a V Struct object
         self.v_path = v_path
         self.files = []
+        self.a_ready = False
         self.sim_path = sim_path
         self.up_structure() 
         print("\n==(.vhdl) Files/Paths Found :", len(self.files))
@@ -43,6 +45,7 @@ class VStruct:
             print("==Simulation path defined at", self.sim_path, "\n")
 
     def up_structure(self, *includes): ### Method that finds every .vhdl file in the current v_path.
+        self.a_ready = False
         v_paths = loop_dir(self.v_path[:-1], "sim", "analysis")
         for path in v_paths:
             if (path.split(".")[-1] == "vhdl") and (not path in self.files):
@@ -59,57 +62,76 @@ class VStruct:
         if os.path.exists(self.sim_path): shutil.rmtree(self.sim_path)
         os.chdir(self.v_path+"analysis")
         os.mkdir(self.sim_path)
+        print("\n==Analyzing", self.v_path, "\n")
         for file in self.files:
             try:
-                shutil.copy(file, self.sim_path)
-                
+                shutil.copy(file, self.sim_path)    
             except FileNotFoundError:
                 print("\n==ERROR: Analyze-FileNotFoundError. (Simulation Path or Files Removed?)\n")
                 os.chdir(originalPath)
             else:
                 process = subprocess.Popen(f"ghdl -a {self.sim_path}*.vhdl", shell=True)
                 process.wait()
-                os.chdir(originalPath)
+                self.a_ready = True
+        os.chdir(originalPath)
         if tmp: shutil.rmtree(self.sim_path)
         if not save: shutil.rmtree(self.v_path+"analysis")
 
-    def run(self, target_file, time):
-        self.change_tmp(False)
-        self.analyze()
-        for vhdl in self.vhdl:
-            if target_file in vhdl:
-                if not os.path.exists(self.sim_path):
-                    print("Simulation dir missing...")
-                    raise FileNotFoundError
-                else:
-                    target_path = None
-                    for file in os.listdir(self.sim_path):
-                        if target_file in file:
-                            target_path = file
-                    bashCommand = f"ghdl -r {target_path[:-5]} --wave=test_{target_file[:-5]}.ghw --stop-time={time}ns"
-                    print(bashCommand)
-                    process = subprocess.Popen(bashCommand, shell=True)
-                    process.wait()
-                    break
-
-    def change_tmp(self, val):
-        self._tmp = val
+    def run(self, time : int, *target_files, tmp=False, save=True, force=True):
+        if not self.a_ready and force:
+            self.analyze(tmp, save)
+            self.a_ready = True
+        elif not self.a_ready and not force:
+            print("\n==Not Analsis Ready. Run not simulated. [FORCE->FALSE]\n")
+        if not os.path.exists(self.sim_path) and force:
+            self.analyze(tmp, save)
+            self.a_ready = True
+        for target_file in target_files:
+            for file in self.files:
+                if target_file in file:
+                    if not os.path.exists(self.sim_path):
+                        print("\n==Simulation dir missing...\n")
+                        raise FileNotFoundError
+                    else:
+                        target_path = None
+                        for file in os.listdir(self.sim_path):
+                            if target_file in file:
+                                target_path = file
+                        originalPath = os.getcwd()
+                        os.chdir(self.v_path+"analysis")
+                        bashCommand = f"ghdl -r {target_path[:-5]} --wave=test_{target_file[:-5]}.ghw --stop-time={time}ns"
+                        print(bashCommand)
+                        process = subprocess.Popen(bashCommand, shell=True)
+                        process.wait()
+                        os.chdir(originalPath)
+                        break
 
     def to_string(self, *args): ### Method that returns a string of the state of the current V Struct
         vreturn = "\n--Estrutura Atual--\n"
         if (len(args) == 0) or (args == "all") or ("all" in args):
             vreturn += "\nVHDL :\n"
-            for i in self.vhdl:
-                vreturn += "-- " + i + "\n"
+            for i in self.files:
+                if ".vhdl" in i:
+                    vreturn += "-- " + i + "\n"
+            vreturn += "\n\nINCLUDED :\n"
+            for i in self.files:
+                if not ".vhdl" in i:
+                    vreturn += "-- " + i + "\n"
             vreturn += "\n\nSIM :\n-- " + self.sim_path
             vreturn += "\n"
         else:
             if ".vhdl" in [i.lower() for i in args]:
                 vreturn += "\nVHDL :\n"
-                for i in self.vhdl:
-                    vreturn += "-- " + i + "\n"
+                for i in self.files:
+                    if ".vhdl" in i:
+                        vreturn += "-- " + i + "\n"
+            if "included" in [i.lower() for i in args]:
+                vreturn += "\nINCLUDED :\n"
+                for i in self.files:
+                    if not ".vhdl" in i:
+                        vreturn += "-- " + i + "\n" 
         if "others" in args:
-            vreturn += "\nFLAGS :\nTMP -> " + str(self._tmp) + "\n"
+            vreturn += "\nFLAGS :\nANALYSIS_READY -> " + str(self.a_ready) + "\n"
         return vreturn
             
 
