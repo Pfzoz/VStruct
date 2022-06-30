@@ -25,59 +25,53 @@ def loop_dir(dir, *args):
 
 class VStruct:
 
-    def __init__(self, v_path, sim_path=False, tmp=False): ### Initializion of a V Struct object
+    def __init__(self, v_path, sim_path=False): ### Initializion of a V Struct object
         self.v_path = v_path
-        self.vhdl = []
-        self.included = []
+        self.files = []
         self.sim_path = sim_path
-        self._tmp = tmp
         self.up_structure() 
-        print("\n==(.vhdl) Files Found :", len(self.vhdl))
+        print("\n==(.vhdl) Files/Paths Found :", len(self.files))
         # --- Tries to set up simulation path (directory where the simulation will be runned).
-        if not tmp:
-            if not sim_path: 
-                print("\n==Simulation path not defined, setting simulation path at structure's path [", self.v_path, "].")
-                if not os.path.exists(v_path + "sim"):
-                    os.mkdir(v_path+"sim")
-                self.sim_path = v_path+"sim/"
-                print("==Simulation path defined successfully.\n")
-            else:
-                os.mkdir(sim_path+"sim")
-                self.sim_path = sim_path+"sim/"
-                print("==Simulation path defined successfully.\n")
+        if not sim_path: 
+            self.sim_path = v_path+"sim/"
+            print("\n==Simulation path not defined, setting simulation path at structure's path [", self.sim_path, "].")
+            
         else:
-            if not sim_path:
-                print("\n==Simulation path not defined, setting simulation path at structure's path [", self.v_path, "]. -- TMP Enabled.")
-                self.sim_path = v_path+"sim/"
-            print("==Simulation path defined successfully.\n")
+            if not os.path.exists(sim_path):
+                print("\n==Warning: Given simulation path does not exist. Runs will fail.")
+            self.sim_path = sim_path+"sim/"
+            print("==Simulation path defined at", self.sim_path, "\n")
 
-    def up_structure(self): ### Method that finds every .vhdl file in the current v_path.
+    def up_structure(self, *includes): ### Method that finds every .vhdl file in the current v_path.
         v_paths = loop_dir(self.v_path[:-1], "sim", "analysis")
         for path in v_paths:
-            if path.split(".")[-1] == "vhdl":
-                self.vhdl.append(path)
+            if (path.split(".")[-1] == "vhdl") and (not path in self.files):
+                self.files.append(path)
+            if includes and (not path in self.files):
+                for inclusion in includes:
+                    if inclusion in path:
+                        print("==Included", path)
+                        self.files.append(path)
 
-    def include(self, *args : str): ### Method to include other types of extensions so that they're added to the structure.
-        v_paths = loop_dir(self.v_path[:-1], "sim", "analysis")
-        for path in v_paths:
-            if (path.split(".")[-1] in args) or (path.split(".")[-1] == args):
-                self.included.append(path)
-
-
-    def analyze(self, save=True): ### Method that analyzes the VHDL structure through GHDL. TMP will not prevent the analysis file of being saved.
-        if not os.path.exists(self.v_path + "analysis"): os.mkdir(self.v_path + "analysis")
-        os.chdir(self.v_path + "analysis")
-        if not os.path.exists(self.sim_path):
-            os.mkdir(self.sim_path)
-        for file in self.vhdl:
+    def analyze(self, tmp=False, save=True): ### Method that analyzes the VHDL structure through GHDL. TMP will not prevent the analysis file of being saved.
+        originalPath = os.getcwd()
+        if not os.path.exists(self.v_path+"analysis"): os.mkdir(self.v_path+"analysis")
+        if os.path.exists(self.sim_path): shutil.rmtree(self.sim_path)
+        os.chdir(self.v_path+"analysis")
+        os.mkdir(self.sim_path)
+        for file in self.files:
             try:
                 shutil.copy(file, self.sim_path)
+                
             except FileNotFoundError:
-                pass
+                print("\n==ERROR: Analyze-FileNotFoundError. (Simulation Path or Files Removed?)\n")
+                os.chdir(originalPath)
             else:
                 process = subprocess.Popen(f"ghdl -a {self.sim_path}*.vhdl", shell=True)
                 process.wait()
-                if self._tmp: shutil.rmtree(self.sim_path)
+                os.chdir(originalPath)
+        if tmp: shutil.rmtree(self.sim_path)
+        if not save: shutil.rmtree(self.v_path+"analysis")
 
     def run(self, target_file, time):
         self.change_tmp(False)
