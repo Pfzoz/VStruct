@@ -2,7 +2,6 @@ from cmath import e
 from importlib.resources import path
 from multiprocessing.context import ForkContext
 import os
-from re import sub
 import shutil
 import subprocess
 # Function to loop through all files of a directory and its subdirectories.
