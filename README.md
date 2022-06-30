@@ -20,10 +20,10 @@ The program is defined around 6 commands:
 5. status - displays the different features of the current mounted V structure. Flags: [-vhdl | shows .vhdl] [-included | shows included files] [-others | shows other minor characteristics]. Displays the whole structure if no flags are specified.
 6. exit - exits the program.
 
-## Documentation
+## Documentation (vstruct.py)
 
 [WIP]
 
-I currently see no use for VStruct as it is, and probably none for the close future, hence you can use it at your will, but its solutions are still very one-problem-specific.
+I currently see no use for VStruct (vstruct.py) as it is - such as a module as an instance - , and probably none for the near future, hence you can use it at your will, but its solutions are still very one-problem-specific-oriented.
 
 
