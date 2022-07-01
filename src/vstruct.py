@@ -25,12 +25,12 @@ def loop_dir(dir, *args):
 
 class VStruct:
 
-    def __init__(self, v_path : str, sim_path=False): ### Initializion of a V Struct object
+    def __init__(self, v_path : str, sim_path=False, exclude_list=[]): ### Initializion of a V Struct object
         self.v_path = v_path
         self.files = []
         self.a_ready = False
         self.sim_path = sim_path
-        self.up_structure() 
+        self.up_structure(exclude_list=exclude_list) 
         print("\n==(.vhdl) Files/Paths Found :", len(self.files))
         # --- Tries to set up simulation path (directory where the simulation will be runned).
         if not sim_path: 
@@ -43,9 +43,9 @@ class VStruct:
             self.sim_path = sim_path+"sim/"
             print("==Simulation path defined at", self.sim_path, "\n")
 
-    def up_structure(self, *includes): ### Method that finds every .vhdl file in the current v_path.
+    def up_structure(self, *includes, exclude_list=[]): ### Method that finds every .vhdl file in the current v_path.
         self.a_ready = False
-        v_paths = loop_dir(self.v_path[:-1], "sim", "analysis")
+        v_paths = loop_dir(self.v_path[:-1], "sim", "analysis", *exclude_list)
         for path in v_paths:
             if (path.split(".")[-1] == "vhdl") and (not path in self.files):
                 self.files.append(path)

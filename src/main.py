@@ -43,12 +43,21 @@ while cmd != "exit":
             print("")
     elif op == "mount": # Mount the V Struct.
         parameters = arguments[1:]
+        excludes = []
+        if "-e" in parameters:
+            for i in range(parameters.index("-e")+1, len(parameters)):
+                print("excludes")
+                if parameters[i][0] != "-":
+                    excludes.append(parameters[i])
+                else:
+                    break
         if "-c" in parameters:
-            vStructure = VStruct(valid_path(path))
+            vStructure = VStruct(valid_path(path), exclude_list=excludes)
+            print("")
         elif "-p" in parameters:
             if len(parameters) > parameters.index("-p")+1:
                 if os.path.exists(parameters[parameters.index("-p")+1]):
-                    vStructure = VStruct(valid_path(parameters[parameters.index("-p")+1]))
+                    vStructure = VStruct(valid_path(parameters[parameters.index("-p")+1]), exclude_list=excludes)
                 else:
                     print("! Invalid Given Path\n")
         if "-i" in parameters and len(parameters)-parameters.index("-i")+1 != 0:
@@ -57,10 +66,13 @@ while cmd != "exit":
                 for i in range(parameters.index("-i")+1, len(parameters)):
                     if parameters[i][0] != "-":
                         inclusions.append(parameters[i])
-                vStructure.up_structure(*inclusions)
+                    else:
+                        break
+                vStructure.up_structure(*inclusions, exclude_list=excludes)
                 print("")
             else:
-                print("! Tried Inclusion when V Struct wasn't mounted.\n")                 
+                print("! Tried Inclusion when V Struct wasn't mounted.\n")  
+                       
     elif op == "analyze": # Analyze the Mounted V Struct.
         if vStructure != None:
             parameters = arguments[1:]
