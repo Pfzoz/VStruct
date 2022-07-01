@@ -59,8 +59,8 @@ class VStruct:
         originalPath = os.getcwd()
         if not os.path.exists(self.v_path+"analysis"): os.mkdir(self.v_path+"analysis")
         if os.path.exists(self.sim_path): shutil.rmtree(self.sim_path)
-        os.chdir(self.v_path+"analysis")
         os.mkdir(self.sim_path)
+        os.chdir(self.sim_path)
         print("\n==Analyzing", self.v_path, "\n")
         for file in self.files:
             try:
@@ -97,7 +97,7 @@ class VStruct:
                             if target_file in file:
                                 target_path = file
                         originalPath = os.getcwd()
-                        os.chdir(self.v_path+"analysis")
+                        os.chdir(self.sim_path)
                         bashCommand = f"ghdl -r {target_path[:-5]} --wave=test_{target_file[:-5]}.ghw --stop-time={time}ns"
                         print(bashCommand)
                         process = subprocess.Popen(bashCommand, shell=True)
